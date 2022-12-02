@@ -1,0 +1,31 @@
+version: '2'
+services:
+  mariadb:
+    image: mariadb:latest
+    restart: always
+    environment:
+      # ALLOW_EMPTY_PASSWORD is recommended only for development.
+      - MARIADB_USER=moodle_user
+      - MARIADB_DATABASE=moodle
+      - MARIADB_PASSWORD=password
+      - MARIADB_ROOT_PASSWORD=password
+      - MARIADB_CHARACTER_SET=utf8mb4
+      - MARIADB_COLLATE=utf8mb4_unicode_ci
+    volumes:
+      - /moodleTest/db/:/var/lib/mysql
+  moodle:
+    build: ./nginx
+    ports:
+      - '80:80'
+      - '443:443'
+    volumes:
+      - /moodleTest/data/:/moodledata/
+      - /moodleTest/config.php:/var/www/html/config.php
+      - /moodleTest/certs/:/certs/
+    depends_on:
+      - mariadb
+  redis:
+    image: redis:latest
+    restart: always
+  cerbot:
+    build: ./certbot

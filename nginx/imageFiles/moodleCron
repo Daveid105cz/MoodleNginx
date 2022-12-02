@@ -1,0 +1,1 @@
+*/1 * * * * /usr/bin/php7.4  /var/www/html/admin/cli/cron.php > /p/1/fd/1

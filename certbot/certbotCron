@@ -1,0 +1,1 @@
+54 0 * * * certbot renew > /proc/1/fd/1 2>&1

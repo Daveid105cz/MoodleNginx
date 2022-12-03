@@ -1,4 +1,4 @@
-FROM alpine as git
+FROM alpine:latest as git
 RUN apk add git
 
 FROM git as fetch
@@ -45,8 +45,8 @@ COPY imageFiles/moodleCron /moodleCronJob.txt
 COPY imageFiles/certCron /certCronJob.txt
 
 #set permissions for moodledata folder and also register the cron job
-RUN mkdir /moodledata && mkdir /certs && \
-    chmod -R 777 /moodledata && chmod -R 777 /certs && \
+RUN mkdir /moodledata && mkdir /certs && mkdir /certChallenges &&\
+    chmod -R 777 /moodledata && chmod -R 777 /certs && chmod -R 777 /certChallenges &&\
     /usr/bin/crontab -u www-data /moodleCronJob.txt && /usr/bin/crontab -u root /certCronJob.txt
 
 #copy nginx and php configuration files

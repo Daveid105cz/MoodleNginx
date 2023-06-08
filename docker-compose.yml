@@ -12,7 +12,7 @@ services:
       - MARIADB_CHARACTER_SET=utf8mb4
       - MARIADB_COLLATE=utf8mb4_unicode_ci
     volumes:
-      - /moodleTest/db/:/var/lib/mysql
+      - mariadb_storage:/var/lib/mysql
   moodle:
     build: ./nginx/
     image: moodlenginx
@@ -20,12 +20,11 @@ services:
       - '80:80'
       - '443:443'
     volumes:
-      - /moodleTest/data/:/moodledata/
-      - /moodleTest/config.php:/var/www/html/config.php
-      - /moodleTest/certs/:/certs/
-      - /moodleTest/certBotChallenges/:/certChallenges/
-      # - ./data/certbot/conf:/etc/letsencrypt
-      # - ./data/certbot/www:/var/www/certbot
+      - moodle_data:/moodledata
+      - certbot_certificates:/certs/
+      - certbot_challenges:/certChallenges/
+      # - /moodleTest/config.php:/var/www/html/config.php
+      - moodle_config_file:/var/www/html/config.php
     depends_on:
       - mariadb
   redis:
@@ -40,7 +39,20 @@ services:
       - STAGING=
       - CRONS=50 * * * *
     volumes:
-      - /moodleTest/certs/:/etc/letsencrypt
-      - /moodleTest/certBotChallenges/:/var/www/certbot
+      - certbot_certificates:/etc/letsencrypt
+      - certbot_challenges:/var/www/certbot
     depends_on:
       - moodle
+
+# Volumes for persistent data that are mounted on filesystem
+volumes:
+  mariadb_storage:
+  moodle_data:
+  certbot_certificates:
+  certbot_challenges:
+  moodle_config_file:
+    driver: local
+    driver_opts:
+      type: none
+      device: /moodleTest/config.php
+      o: bind

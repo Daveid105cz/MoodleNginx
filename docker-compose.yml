@@ -2,6 +2,7 @@ version: '2'
 services:
   mariadb:
     image: mariadb:latest
+    container_name: moodle_database
     restart: always
     environment:
       # ALLOW_EMPTY_PASSWORD is recommended only for development.
@@ -16,27 +17,31 @@ services:
   moodle:
     build: ./nginx/
     image: moodlenginx
+    container_name: moodle_web
     ports:
       - '80:80'
       - '443:443'
     volumes:
       - moodle_data:/moodledata
-      - certbot_certificates:/certs/
-      - certbot_challenges:/certChallenges/
-      # - /moodleTest/config.php:/var/www/html/config.php
-      - moodle_config_file:/var/www/html/config.php
+      - certbot_certificates:/certificates
+      - certbot_challenges:/certificateChallenges
+      # - ./moodle_config.php:/var/www/html/config.php
     depends_on:
       - mariadb
+      - redis
   redis:
     image: redis:latest
+    container_name: moodle_redis
     restart: always
   cerbot:
     build: ./certbot/
     image: simplecertbot
+    container_name: moodle_certbot
+    restart: always
     environment:
       - DOMAIN=moodle.oact.cz
       - EMAIL=davi.podeszwa@gmail.com
-      - STAGING=
+      - STAGING=true
       - CRONS=50 * * * *
     volumes:
       - certbot_certificates:/etc/letsencrypt
@@ -44,15 +49,16 @@ services:
     depends_on:
       - moodle
 
+
 # Volumes for persistent data that are mounted on filesystem
 volumes:
   mariadb_storage:
   moodle_data:
   certbot_certificates:
   certbot_challenges:
-  moodle_config_file:
-    driver: local
-    driver_opts:
-      type: none
-      device: /moodleTest/config.php
-      o: bind
+  # moodle_config_file:
+  #   driver: local
+  #   driver_opts:
+  #     type: none
+  #     device: /moodleTest/config.php
+  #     o: bind

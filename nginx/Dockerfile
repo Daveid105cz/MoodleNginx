@@ -53,11 +53,15 @@ COPY --from=ochinchina/supervisord:latest /usr/local/bin/supervisord /usr/local/
 COPY imageFiles/moodleCron /moodleCronJob.txt
 COPY imageFiles/certCron /certCronJob.txt
 
+# copy the script for generating the snakeoil certificate
+COPY imageFiles/genSnakeOilCert.sh /genSnakeOilCert.sh
+
 # set permissions for moodledata folder
 # also registers the CRON jobs for specific users by CRONTABs
-RUN mkdir /moodledata && mkdir /certs && mkdir /certChallenges &&\
-    chmod -R 777 /moodledata && chmod -R 777 /certs && chmod -R 777 /certChallenges &&\
-    /usr/bin/crontab -u www-data /moodleCronJob.txt && /usr/bin/crontab -u root /certCronJob.txt
+RUN mkdir /moodledata && mkdir /certificates && mkdir /certificateChallenges &&\
+    chmod -R 777 /moodledata && chmod -R 777 /certificates && chmod -R 777 /certificateChallenges &&\
+    /usr/bin/crontab -u www-data /moodleCronJob.txt && /usr/bin/crontab -u root /certCronJob.txt &&\
+    chmod +x /genSnakeOilCert.sh
 
 # copy nginx main and site configuration
 COPY imageFiles/nginx.conf /etc/nginx/nginx.conf
@@ -72,5 +76,6 @@ COPY imageFiles/php.ini /etc/php/7.4/fpm/php.ini
 # more info about Supervisord-GO here: https://github.com/ochinchina/supervisord
 COPY imageFiles/supervisord.conf /etc/supervisor/supervisord.conf
 
-VOLUME [ "/moodledata", "/certs" ]
+
+VOLUME [ "/moodledata", "/certificates" ]
 CMD ["/usr/local/bin/supervisord"]

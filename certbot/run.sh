@@ -1,18 +1,35 @@
 #!/bin/bash
 
+# check if a file called .isInit has been created in the /etc/letsencrypt folder
+# if it has, then we have already initialized the certbot, so we can just start the cron daemon
+# if it has not, then we need to initialize the certbot, and then start the cron daemon
+# this is done to avoid having to initialize the certbot every time the container is started
+
+if [ ! -f "/etc/letsencrypt/.isInit" ]; then
+    /init.sh
+    # check if the init script was successful
+    if [ $? -ne 0 ]; then
+        echo "Initialization failed, fix the issue and then restart the container manually"
+        # blocking loop to keep the container alive
+        while true; do sleep 1; done
+    fi
+    touch /etc/letsencrypt/.isInit
+fi
+
 if [ -z "$CRONS" ]; then 
     CRONS="20 1 * * *"
 fi
 
 echo "Cron timings used: $CRONS"
 
-echo -n "$CRONS " > /testTex.txt
-echo "certbot renew > /proc/1/fd/1 2>&1" >> /testTex.txt
+echo -n "$CRONS " > /cronSettings.txt
+echo "certbot renew > /proc/1/fd/1 2>&1" >> /cronSettings.txt
 
 echo "Using this cronjob:"
-cat /testTex.txt
+cat /cronSettings.txt
 
-/usr/bin/crontab -u root /testTex.txt
+echo "Installing cronjob"
+/usr/bin/crontab -u root /cronSettings.txt
 
 
 # A magical way of killing a child process when the shell receives SIGTERM

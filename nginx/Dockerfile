@@ -5,7 +5,7 @@ RUN apk add git
 # and switches branch to the desired version
 FROM git as fetch
 WORKDIR /repo
-ENV MOODLE_BRANCH MOODLE_311_STABLE
+ENV MOODLE_BRANCH MOODLE_402_STABLE
 RUN git clone git://git.moodle.org/moodle.git && cd moodle && \
     git branch --track ${MOODLE_BRANCH} origin/${MOODLE_BRANCH} && \
     git checkout ${MOODLE_BRANCH}  
@@ -16,7 +16,7 @@ FROM ubuntu:jammy
 RUN apt-get -qq update && apt-get -qq upgrade -y &&\
     apt-get -qq install -y software-properties-common cron
 
-ENV PHP_VERSION 7.4
+ENV PHP_VERSION 8.1
 
 # Install all required PHP packages and packages needed for moodle to work(graphviz, aspell, ghostscript, ...)
 # also NGINX itself
@@ -31,7 +31,6 @@ RUN LC_ALL=C.UTF-8 apt-add-repository ppa:ondrej/php -y && \
     php${PHP_VERSION}-redis \
     php${PHP_VERSION}-pspell \
     php${PHP_VERSION}-curl \
-    php${PHP_VERSION}-gd \
     php${PHP_VERSION}-cli \
     php${PHP_VERSION}-intl \
     php${PHP_VERSION}-mysqlnd \
@@ -41,6 +40,8 @@ RUN LC_ALL=C.UTF-8 apt-add-repository ppa:ondrej/php -y && \
     php${PHP_VERSION}-zip \
     php${PHP_VERSION}-soap \
     php${PHP_VERSION}-mbstring \
+    php${PHP_VERSION}-exif \
+    php${PHP_VERSION}-gd \
     nginx && \
     apt-get autoremove -y && apt-get clean && rm -rf /var/lib/apt/lists/*
 
@@ -60,22 +61,23 @@ COPY imageFiles/genSnakeOilCert.sh /genSnakeOilCert.sh
 # also registers the CRON jobs for specific users by CRONTABs
 RUN mkdir /moodledata && mkdir /certificates && mkdir /certificateChallenges &&\
     chmod -R 777 /moodledata && chmod -R 777 /certificates && chmod -R 777 /certificateChallenges &&\
-    /usr/bin/crontab -u www-data /moodleCronJob.txt && /usr/bin/crontab -u root /certCronJob.txt &&\
+    chmod +r /var/www/html &&\
+    /usr/bin/crontab -u www-data /moodleCronJob.txt &&\
+    /usr/bin/crontab -u root /certCronJob.txt &&\
     chmod +x /genSnakeOilCert.sh
 
 # copy nginx main and site configuration
 COPY imageFiles/nginx.conf /etc/nginx/nginx.conf
 COPY imageFiles/nginx-site.conf /etc/nginx/sites-enabled/default
 # copy php-fpm config (contains the listen unix socket configuration)
-COPY imageFiles/php-fpm.conf /etc/php/7.4/fpm/php-fpm.conf
+COPY imageFiles/php-fpm.conf /etc/php/8.1/fpm/php-fpm.conf
 # copy php.ini config (contains the OPCache settings and send limits)
-COPY imageFiles/php.ini /etc/php/7.4/fpm/php.ini
+COPY imageFiles/php.ini /etc/php/8.1/fpm/php.ini
 
 # copy the supervisord config
 # it specifies which processes it should run at startup
 # more info about Supervisord-GO here: https://github.com/ochinchina/supervisord
 COPY imageFiles/supervisord.conf /etc/supervisor/supervisord.conf
-
 
 VOLUME [ "/moodledata", "/certificates" ]
 CMD ["/usr/local/bin/supervisord"]

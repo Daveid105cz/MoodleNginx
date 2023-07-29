@@ -5,7 +5,14 @@
 # if it has not, then we need to initialize the certbot, and then start the cron daemon
 # this is done to avoid having to initialize the certbot every time the container is started
 
-if [ ! -f "/etc/letsencrypt/.isInit" ]; then
+# use a specific file for staging and production
+if [ -n "${STAGING}" ]; then
+    INITFILE="/etc/letsencrypt/.isInitStaging"
+else
+    INITFILE="/etc/letsencrypt/.isInitProduction"
+fi
+
+if [ ! -f "$INITFILE" ]; then
     /init.sh
     # check if the init script was successful
     if [ $? -ne 0 ]; then

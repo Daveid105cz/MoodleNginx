@@ -14,6 +14,8 @@ services:
       - MARIADB_COLLATE=utf8mb4_unicode_ci
     volumes:
       - mariadb_storage:/var/lib/mysql
+    ports:
+      - '3309:3306'
   moodle:
     build: ./nginx/
     image: moodlenginx
@@ -22,10 +24,12 @@ services:
       - '80:80'
       - '443:443'
     volumes:
-      - moodle_data:/moodledata
+      - /moodle_data:/moodledata
       - certbot_certificates:/certificates
       - certbot_challenges:/certificateChallenges
-      # - ./moodle_config.php:/var/www/html/config.php
+      - ./moodle_config.php:/var/www/html/config.php
+    environment:
+      - NO_CRON=1
     depends_on:
       - mariadb
       - redis
@@ -53,7 +57,6 @@ services:
 # Volumes for persistent data that are mounted on filesystem
 volumes:
   mariadb_storage:
-  moodle_data:
   certbot_certificates:
   certbot_challenges:
   # moodle_config_file:

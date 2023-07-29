@@ -20,8 +20,7 @@ certbot certonly --webroot -w /var/www/certbot \
     -d $DOMAIN \
     --rsa-key-size $rsa_key_size \
     --agree-tos \
-    -n \
-    --force-renewal
+    -n
 
 # check if the certbot command was successful and copy the resulting certificates to a folder that is shared with the nginx container
 if [ $? -eq 0 ]; then

@@ -1,1 +1,2 @@
-54 0 * * * certbot renew > /proc/1/fd/1 2>&1
+54 0 * * * certbot renew --deploy-hook "cp /etc/letsencrypt/live/$DOMAIN/fullchain.pem /etc/letsencrypt/live/$DOMAIN/privkey.pem /etc/letsencry
+pt/" > /proc/1/fd/1 2>&1

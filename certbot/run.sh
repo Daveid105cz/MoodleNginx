@@ -30,7 +30,7 @@ fi
 echo "Cron timings used: $CRONS"
 
 echo -n "$CRONS " > /cronSettings.txt
-echo "certbot renew > /proc/1/fd/1 2>&1" >> /cronSettings.txt
+echo 'certbot renew --deploy-hook "cp /etc/letsencrypt/live/$DOMAIN/fullchain.pem /etc/letsencrypt/live/$DOMAIN/privkey.pem /etc/letsencrypt/" > /proc/1/fd/1 2>&1' >> /cronSettings.txt
 
 echo "Using this cronjob:"
 cat /cronSettings.txt

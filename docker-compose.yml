@@ -5,7 +5,6 @@ services:
     container_name: moodle_database
     restart: always
     environment:
-      # ALLOW_EMPTY_PASSWORD is recommended only for development.
       - MARIADB_USER=moodle_user
       - MARIADB_DATABASE=moodle
       - MARIADB_PASSWORD=password
@@ -20,6 +19,7 @@ services:
     build: ./nginx/
     image: moodlenginx
     container_name: moodle_web
+    restart: always
     ports:
       - '80:80'
       - '443:443'
@@ -59,9 +59,3 @@ volumes:
   mariadb_storage:
   certbot_certificates:
   certbot_challenges:
-  # moodle_config_file:
-  #   driver: local
-  #   driver_opts:
-  #     type: none
-  #     device: /moodleTest/config.php
-  #     o: bind
